@@ -1,0 +1,213 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trident-controller
+  labels:
+    app: controller.csi.trident.netapp.io
+    kubectl.kubernetes.io/default-container: trident-main
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: controller.csi.trident.netapp.io
+  template:
+    metadata:
+      labels:
+        app: controller.csi.trident.netapp.io
+      annotations: {{- if .Values.controller.annotations }}{{ toYaml .Values.controller.annotations | nindent 8 }}{{- end }}
+    spec:
+      serviceAccount: trident-controller
+      containers:
+        - name: trident-main
+          image: netapp/trident:25.06.2
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: false
+            capabilities:
+              drop:
+                - all
+          ports:
+            - containerPort: 8443
+            - containerPort: 8001
+          command:
+            - /trident_orchestrator
+          args:
+            - "--crd_persistence"
+            - "--k8s_pod"
+            - "--https_rest"
+            - "--https_port=8443"
+            - "--csi_node_name=$(KUBE_NODE_NAME)"
+            - "--csi_endpoint=$(CSI_ENDPOINT)"
+            - "--csi_role=controller"
+            - "--log_format=text"
+            - "--log_level=info"
+            - "--log_workflows="
+            - "--log_layers="
+            - "--disable_audit_log=true"
+            - "--address=127.0.0.1"
+            - "--http_request_timeout=1m30s"
+            - "--enable_force_detach=false"
+            - "--enable_concurrency=false"
+            - "--metrics"
+          #- -debug
+          livenessProbe:
+            exec:
+              command:
+                - tridentctl
+                - -s
+                - "127.0.0.1:8000"
+                - version
+            failureThreshold: 2
+            initialDelaySeconds: 120
+            periodSeconds: 120
+            timeoutSeconds: 90
+          env:
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: CSI_ENDPOINT
+              value: unix://plugin/csi.sock
+            - name: TRIDENT_SERVER
+              value: "127.0.0.1:8000"
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /plugin
+            - name: certs
+              mountPath: /certs
+              readOnly: true
+          resources: {{- if .Values.controller.tridentMain.resources }}{{ toYaml .Values.controller.tridentMain.resources | nindent 12 }}{{- end }}
+        - name: trident-autosupport
+          image: docker.io/netapp/trident-autosupport:25.06
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            capabilities:
+              drop:
+                - all
+          command:
+            - /usr/local/bin/trident-autosupport
+          args:
+            - "--k8s-pod"
+            - "--log-format=text"
+            - "--trident-silence-collector=true"
+          #- -debug
+          resources: {{- if .Values.controller.tridentAutosupport.resources }}{{ toYaml .Values.controller.tridentAutosupport.resources | nindent 12 }}{{- end }}
+          volumeMounts:
+            - name: asup-dir
+              mountPath: /asup
+        - name: csi-provisioner
+          image: registry.k8s.io/sig-storage/csi-provisioner:v5.2.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            capabilities:
+              drop:
+                - all
+          args:
+            - "--v=2"
+            - "--timeout=600s"
+            - "--csi-address=$(ADDRESS)"
+            - "--retry-interval-start=8s"
+            - "--retry-interval-max=30s"
+            - "--worker-threads=5"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+          resources: {{- if .Values.controller.csiProvisioner.resources }}{{ toYaml .Values.controller.csiProvisioner.resources | nindent 12 }}{{- end }}
+        - name: csi-attacher
+          image: registry.k8s.io/sig-storage/csi-attacher:v4.8.1
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            capabilities:
+              drop:
+                - all
+          args:
+            - "--v=2"
+            - "--timeout=60s"
+            - "--retry-interval-start=10s"
+            - "--worker-threads=10"
+            - "--csi-address=$(ADDRESS)"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+          resources: {{- if .Values.controller.csiAttacher.resources }}{{ toYaml .Values.controller.csiAttacher.resources | nindent 12 }}{{- end }}
+        - name: csi-resizer
+          image: registry.k8s.io/sig-storage/csi-resizer:v1.13.2
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            capabilities:
+              drop:
+                - all
+          args:
+            - "--v=2"
+            - "--timeout=300s"
+            - "--workers=10"
+            - "--csi-address=$(ADDRESS)"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+          resources: {{- if .Values.controller.csiResizer.resources }}{{ toYaml .Values.controller.csiResizer.resources | nindent 12 }}{{- end }}
+        - name: csi-snapshotter
+          image: registry.k8s.io/sig-storage/csi-snapshotter:v8.2.1
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            capabilities:
+              drop:
+                - all
+          args:
+            - "--v=2"
+            - "--timeout=300s"
+            - "--worker-threads=10"
+            - "--csi-address=$(ADDRESS)"
+          env:
+            - name: ADDRESS
+              value: /var/lib/csi/sockets/pluginproxy/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/csi/sockets/pluginproxy/
+          resources: {{- if .Values.controller.csiSnapshotter.resources }}{{ toYaml .Values.controller.csiSnapshotter.resources | nindent 12 }}{{- end }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                      - arm64
+                      - amd64
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                      - linux
+      tolerations: {{- if .Values.controller.tolerations }}{{ toYaml .Values.controller.tolerations | nindent 8 }}{{- end }}
+      volumes:
+        - name: socket-dir
+          emptyDir:
+        - name: certs
+          projected:
+            sources:
+              - secret:
+                  name: trident-csi
+              - secret:
+                  name: trident-encryption-keys
+        - name: asup-dir
+          emptyDir:
+            medium: ""
+            sizeLimit: 1Gi

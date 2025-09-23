@@ -1,0 +1,13 @@
+apiVersion: v2
+name: trident
+description: A Helm chart for Trident CSI based on tridentcli output
+type: application
+version: 0.1.0
+appVersion: "25.06.2"
+maintainers:
+  - name: luanaBanana
+  - name: opensourcepf
+    email: opensource@postfinance.ch
+home: https://github.com/postfinance/trident-cli-helm
+sources:
+  - https://github.com/postfinance/trident-cli-helm
