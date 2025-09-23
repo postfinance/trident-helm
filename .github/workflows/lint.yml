@@ -7,7 +7,11 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+<<<<<<< HEAD
       - uses: actions/checkout@v5
+=======
+      - uses: actions/checkout@v3
+>>>>>>> 5344ac60a2571b18551bbfd80ab91ebd662b4a28
 
       - name: Set up Helm
         uses: azure/setup-helm@v3
