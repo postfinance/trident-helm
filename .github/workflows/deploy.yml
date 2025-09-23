@@ -27,6 +27,3 @@ jobs:
 
       - name: Get all resources
         run: kubectl get all -A
-
-      - name: Show Helm release status
-        run: helm status trident
