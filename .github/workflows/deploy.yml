@@ -23,7 +23,7 @@ jobs:
         run: helm template trident ./ > rendered.yaml
 
       - name: Install Helm chart
-        run: helm install trident ./ --wait
+        run: kubectl apply -f rendered.yaml
 
       - name: Get all resources
         run: kubectl get all -A
