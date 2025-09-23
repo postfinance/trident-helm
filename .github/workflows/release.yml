@@ -56,4 +56,4 @@ jobs:
           token: "${{ secrets.GITHUB_TOKEN }}"
           app_version: "${{env.TAG}}"
           chart_version: "${{env.VERSION}}"
-          charts_dir: helm
+          charts_dir: .
