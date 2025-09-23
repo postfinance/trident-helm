@@ -10,8 +10,12 @@ tridentctl install --generate-custom-yaml --silence-autosupport -n dummy
 echo "Fixing leading whitespace issues in CRD manifest..."
 yq setup/trident-crds.yaml > setup/trident-crds.yaml
 
-# remove namespace metadata to allow installation in any namespace
+# linting fails
+echo "Removing empty lines from manifests..."
+sed -i '/^[[:space:]]*$/d' setup/*
 
+# remove namespace metadata to allow installation in any namespace
+echo "Removing namespace metadata from manifests..."
 for file in setup/*; do
   if yq '.metadata |  has("namespace")' "$file" | grep -q true; then
     yq -i 'del(.metadata.namespace)' "$file"
