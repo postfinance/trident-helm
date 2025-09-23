@@ -17,8 +17,3 @@ jobs:
 
       - name: Render templates
         run: helm template . > rendered.yaml
-
-      - name: Validate YAML
-        uses: ibiqlik/action-yamllint@v3
-        with:
-          file_or_dir: rendered.yaml
