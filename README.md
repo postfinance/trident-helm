@@ -28,5 +28,8 @@ Feel free to submit issues and pull requests for improvements or bug fixes.
 ### Upgrading Chart
 
 1. Download tridentctl version you'd like to update to
-2. Run `transform.sh`
+2. `cd charts`
+2. `./transform.sh`
+2. Bump chart version
+2. Merge PR to main
 3. Create tag

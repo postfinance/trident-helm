@@ -2,7 +2,7 @@ apiVersion: v2
 name: trident
 description: A Helm chart for Trident CSI based on tridentcli output
 type: application
-version: 0.1.0
+version: 0.0.0
 appVersion: "25.06.2"
 maintainers:
   - name: luanaBanana
