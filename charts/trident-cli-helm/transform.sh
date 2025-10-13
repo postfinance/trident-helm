@@ -5,6 +5,7 @@ set -e
 
 echo "::group::Generating Trident manifests"
 echo "Generating custom Trident YAML manifests using tridentctl..."
+echo "Using tridentctl version: $(tridentctl version --client)"
 tridentctl install --generate-custom-yaml --silence-autosupport -n dummy
 echo "::endgroup::"
 
