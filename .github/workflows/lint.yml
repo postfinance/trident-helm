@@ -1,7 +1,11 @@
 name: Helm Lint & Template
 on:
   pull_request:
+    paths:
+      - 'charts/trident-cli-helm/**'
   push:
+    paths:
+      - 'charts/trident-cli-helm/**'
     branches: [ main ]
 jobs:
   lint:
@@ -13,7 +17,7 @@ jobs:
         uses: azure/setup-helm@v4
 
       - name: Lint Helm chart
-        run: helm lint .
+        run: helm lint charts/trident-cli-helm
 
       - name: Render templates
-        run: helm template . > rendered.yaml
+        run: helm template charts/trident-cli-helm > rendered.yaml

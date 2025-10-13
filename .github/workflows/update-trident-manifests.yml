@@ -74,8 +74,8 @@ jobs:
           echo "::endgroup::"
 
       - name: Run transform script
+        working-directory: charts/trident-cli-helm
         run: |
-          cd charts/trident-cli-helm
           chmod +x transform.sh
           ./transform.sh
 
