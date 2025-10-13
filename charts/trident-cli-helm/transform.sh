@@ -3,52 +3,50 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-echo "Generating custom Trident YAML manifests..."
+echo "::group::Generating Trident manifests"
+echo "Generating custom Trident YAML manifests using tridentctl..."
 tridentctl install --generate-custom-yaml --silence-autosupport -n dummy
+echo "::endgroup::"
 
-# this needs to be done because on one CRD there are leading whitespaces which helm template chokes on
-echo "Fixing leading whitespace issues in CRD manifest..."
-yq setup/trident-crds.yaml > setup/trident-crds.yaml
+echo "::group::Processing manifests"
+echo "Cleaning up whitespace and formatting issues..."
+for file in setup/*; do
+  yq -i '.' "$file"
+done
 
-# linting fails
-echo "Removing empty lines from manifests..."
-sed -i '/^[[:space:]]*$/d' setup/*
-
-# remove namespace metadata to allow installation in any namespace
-echo "Removing namespace metadata from manifests..."
+echo "Removing namespace metadata to allow installation in any namespace..."
 for file in setup/*; do
   if yq '.metadata |  has("namespace")' "$file" | grep -q true; then
     yq -i 'del(.metadata.namespace)' "$file"
   fi
 done
-
 rm setup/trident-namespace.yaml
 
 echo "Injecting Helm templating into manifests..."
 
 # daemonset
 yq -i '
-  (.spec.template.spec.containers[] | select(.name == "trident-main")).resources = "{{- if .Values.daemonset.tridentMain.resources }}{{ toYaml .Values.daemonset.tridentMain.resources | nindent 12 }}{{- end }}"
+  (.spec.template.spec.containers[] | select(.name == "trident-main")).resources = "{{ with .Values.daemonset.tridentMain.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}"
   |
-  (.spec.template.spec.containers[] | select(.name == "driver-registrar")).resources = "{{- if .Values.daemonset.driverRegistrar.resources }}{{ toYaml .Values.daemonset.driverRegistrar.resources | nindent 12 }}{{- end }}"
+  (.spec.template.spec.containers[] | select(.name == "driver-registrar")).resources = "{{ with .Values.daemonset.driverRegistrar.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}"
 ' setup/trident-daemonset.yaml
 
-# Insert tolerations Helm templating only if values exist
-sed -i '/^[[:space:]]*tolerations:/a\{{- if .Values.daemonset.tolerations }}{{ toYaml .Values.daemonset.tolerations | indent 8 }}{{- end }}' setup/trident-daemonset.yaml
+# append tolerations to existing ones in daemonset
+yq -i '.spec.template.spec.tolerations += "{{- with .Values.daemonset.tolerations }}{{ toYaml . | nindent 8 }}{{- end }}"' setup/trident-daemonset.yaml
 
 # deployment
 yq -i '
-  (.spec.template.spec.containers[] | select(.name == "trident-main")).resources = "{{- if .Values.controller.tridentMain.resources }}{{ toYaml .Values.controller.tridentMain.resources | nindent 12 }}{{- end }}"
+  (.spec.template.spec.containers[] | select(.name == "trident-main")).resources = "{{ with .Values.controller.tridentMain.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}"
   |
-  (.spec.template.spec.containers[] | select(.name == "trident-autosupport")).resources = "{{- if .Values.controller.tridentAutosupport.resources }}{{ toYaml .Values.controller.tridentAutosupport.resources | nindent 12 }}{{- end }}"
+  (.spec.template.spec.containers[] | select(.name == "trident-autosupport")).resources = "{{ with .Values.controller.tridentAutosupport.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}"
   |
-  (.spec.template.spec.containers[] | select(.name == "csi-provisioner")).resources = "{{- if .Values.controller.csiProvisioner.resources }}{{ toYaml .Values.controller.csiProvisioner.resources | nindent 12 }}{{- end }}"
+  (.spec.template.spec.containers[] | select(.name == "csi-provisioner")).resources = "{{ with .Values.controller.csiProvisioner.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}"
   |
-  (.spec.template.spec.containers[] | select(.name == "csi-attacher")).resources = "{{- if .Values.controller.csiAttacher.resources }}{{ toYaml .Values.controller.csiAttacher.resources | nindent 12 }}{{- end }}"
+  (.spec.template.spec.containers[] | select(.name == "csi-attacher")).resources = "{{ with .Values.controller.csiAttacher.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}"
   |
-  (.spec.template.spec.containers[] | select(.name == "csi-resizer")).resources = "{{- if .Values.controller.csiResizer.resources }}{{ toYaml .Values.controller.csiResizer.resources | nindent 12 }}{{- end }}"
+  (.spec.template.spec.containers[] | select(.name == "csi-resizer")).resources = "{{ with .Values.controller.csiResizer.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}"
   |
-  (.spec.template.spec.containers[] | select(.name == "csi-snapshotter")).resources = "{{- if .Values.controller.csiSnapshotter.resources }}{{ toYaml .Values.controller.csiSnapshotter.resources | nindent 12 }}{{- end }}"
+  (.spec.template.spec.containers[] | select(.name == "csi-snapshotter")).resources = "{{ with .Values.controller.csiSnapshotter.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}"
   |
   .spec.template.spec.tolerations = "{{- if .Values.controller.tolerations }}{{ toYaml .Values.controller.tolerations | nindent 8 }}{{- end }}"
   |
@@ -56,14 +54,24 @@ yq -i '
 ' setup/trident-deployment.yaml
 
 
-# Fix single quotes around Helm templating added by yq
+echo "Fixing quotes around Helm templating..."
 sed -i "s/'{{/{{/g; s/}}'/}}/g" setup/*
+echo "::endgroup::"
 
-echo "Moving generated manifests from setup/ to templates/ for Helm usage..."
+echo "::group::Organizing Helm chart"
+echo "Moving CRDs to crds/ folder..."
+mkdir -p crds/
+mv -f setup/trident-crds.yaml crds/
+
+echo "Moving templates to templates/ folder..."
 mv -f setup/* templates/
 rm -rf setup/
+echo "::endgroup::"
 
-echo "Rendering the Helm chart to verify output..."
-helm template .
+echo "::group::Validating Helm chart"
+echo "Rendering Helm chart to verify template syntax..."
+helm template . 1&> /dev/null
+echo "✅ Helm chart validation successful"
+echo "::endgroup::"
 
-echo "Done! The Helm chart has been prepared and rendered."
+echo "🎉 Trident Helm chart transformation completed successfully!"

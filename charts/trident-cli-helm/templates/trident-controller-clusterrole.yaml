@@ -64,13 +64,7 @@ rules:
     resources: ["csinodes"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["trident.netapp.io"]
-    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes",
-"tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status",
-"tridentmirrorrelationships", "tridentmirrorrelationships/status", "tridentsnapshotinfos",
-"tridentsnapshotinfos/status", "tridentvolumepublications", "tridentvolumereferences",
-"tridentactionmirrorupdates", "tridentactionmirrorupdates/status",
-"tridentactionsnapshotrestores", "tridentactionsnapshotrestores/status",
-"tridentgroupsnapshots", "tridentgroupsnapshots/status"]
+    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes", "tridentnodes", "tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status", "tridentmirrorrelationships", "tridentmirrorrelationships/status", "tridentsnapshotinfos", "tridentsnapshotinfos/status", "tridentvolumepublications", "tridentvolumereferences", "tridentactionmirrorupdates", "tridentactionmirrorupdates/status", "tridentactionsnapshotrestores", "tridentactionsnapshotrestores/status", "tridentgroupsnapshots", "tridentgroupsnapshots/status"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]

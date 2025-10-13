@@ -4,8 +4,8 @@ kind: DaemonSet
 metadata:
   name: trident-node-linux
   labels:
-    app: node.csi.trident.netapp.io
     kubectl.kubernetes.io/default-container: trident-main
+    app: node.csi.trident.netapp.io
 spec:
   selector:
     matchLabels:
@@ -115,7 +115,7 @@ spec:
             - name: certs
               mountPath: /certs
               readOnly: true
-          resources: {{- if .Values.daemonset.tridentMain.resources }}{{ toYaml .Values.daemonset.tridentMain.resources | nindent 12 }}{{- end }}
+          resources: {{ with .Values.daemonset.tridentMain.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}
         - name: driver-registrar
           image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.13.0
           imagePullPolicy: IfNotPresent
@@ -137,7 +137,7 @@ spec:
               mountPath: /plugin
             - name: registration-dir
               mountPath: /registration
-          resources: {{- if .Values.daemonset.driverRegistrar.resources }}{{ toYaml .Values.daemonset.driverRegistrar.resources | nindent 12 }}{{- end }}
+          resources: {{ with .Values.daemonset.driverRegistrar.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -162,11 +162,11 @@ spec:
                       - node.csi.trident.netapp.io
               topologyKey: kubernetes.io/hostname
       tolerations:
-{{- if .Values.daemonset.tolerations }}{{ toYaml .Values.daemonset.tolerations | indent 8 }}{{- end }}
         - effect: "NoExecute"
           operator: "Exists"
         - effect: "NoSchedule"
           operator: "Exists"
+        - {{- with .Values.daemonset.tolerations }}{{ toYaml . | nindent 8 }}{{- end }}
       volumes:
         - name: plugin-dir
           hostPath:

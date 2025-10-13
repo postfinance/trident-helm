@@ -84,7 +84,7 @@ spec:
             - name: certs
               mountPath: /certs
               readOnly: true
-          resources: {{- if .Values.controller.tridentMain.resources }}{{ toYaml .Values.controller.tridentMain.resources | nindent 12 }}{{- end }}
+          resources: {{ with .Values.controller.tridentMain.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}
         - name: trident-autosupport
           image: docker.io/netapp/trident-autosupport:25.06
           imagePullPolicy: IfNotPresent
@@ -99,7 +99,7 @@ spec:
             - "--log-format=text"
             - "--trident-silence-collector=true"
           #- -debug
-          resources: {{- if .Values.controller.tridentAutosupport.resources }}{{ toYaml .Values.controller.tridentAutosupport.resources | nindent 12 }}{{- end }}
+          resources: {{ with .Values.controller.tridentAutosupport.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}
           volumeMounts:
             - name: asup-dir
               mountPath: /asup
@@ -123,7 +123,7 @@ spec:
           volumeMounts:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
-          resources: {{- if .Values.controller.csiProvisioner.resources }}{{ toYaml .Values.controller.csiProvisioner.resources | nindent 12 }}{{- end }}
+          resources: {{ with .Values.controller.csiProvisioner.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}
         - name: csi-attacher
           image: registry.k8s.io/sig-storage/csi-attacher:v4.8.1
           imagePullPolicy: IfNotPresent
@@ -143,7 +143,7 @@ spec:
           volumeMounts:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
-          resources: {{- if .Values.controller.csiAttacher.resources }}{{ toYaml .Values.controller.csiAttacher.resources | nindent 12 }}{{- end }}
+          resources: {{ with .Values.controller.csiAttacher.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}
         - name: csi-resizer
           image: registry.k8s.io/sig-storage/csi-resizer:v1.13.2
           imagePullPolicy: IfNotPresent
@@ -162,7 +162,7 @@ spec:
           volumeMounts:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
-          resources: {{- if .Values.controller.csiResizer.resources }}{{ toYaml .Values.controller.csiResizer.resources | nindent 12 }}{{- end }}
+          resources: {{ with .Values.controller.csiResizer.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}
         - name: csi-snapshotter
           image: registry.k8s.io/sig-storage/csi-snapshotter:v8.2.1
           imagePullPolicy: IfNotPresent
@@ -181,7 +181,7 @@ spec:
           volumeMounts:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
-          resources: {{- if .Values.controller.csiSnapshotter.resources }}{{ toYaml .Values.controller.csiSnapshotter.resources | nindent 12 }}{{- end }}
+          resources: {{ with .Values.controller.csiSnapshotter.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
