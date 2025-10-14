@@ -18,4 +18,22 @@ entries:
     urls:
     - https://github.com/postfinance/trident-cli-helm/releases/download/trident-cli-helm-0.0.0/trident-cli-helm-0.0.0.tgz
     version: 0.0.0
-generated: "2025-09-23T15:34:28.821017536Z"
+  trident-helm:
+  - apiVersion: v2
+    appVersion: 25.06.2
+    created: "2025-10-14T15:00:40.681677229Z"
+    description: A Helm chart for Trident CSI based on tridentctl output
+    digest: bdd41872783018c6ea7eb621416e16177d4f5821443a92f7b28e1541be99a59e
+    home: https://github.com/postfinance/trident-helm
+    maintainers:
+    - name: luanaBanana
+    - email: opensource@postfinance.ch
+      name: opensourcepf
+    name: trident-helm
+    sources:
+    - https://github.com/postfinance/trident-helm
+    type: application
+    urls:
+    - https://github.com/postfinance/trident-helm/releases/download/trident-helm-0.0.0/trident-helm-0.0.0.tgz
+    version: 0.0.0
+generated: "2025-10-14T15:00:40.68168309Z"
