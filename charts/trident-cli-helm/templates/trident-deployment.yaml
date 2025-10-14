@@ -4,8 +4,8 @@ kind: Deployment
 metadata:
   name: trident-controller
   labels:
-    kubectl.kubernetes.io/default-container: trident-main
     app: controller.csi.trident.netapp.io
+    kubectl.kubernetes.io/default-container: trident-main
 spec:
   replicas: 1
   strategy:
@@ -196,7 +196,7 @@ spec:
                     operator: In
                     values:
                       - linux
-      tolerations: {{- if .Values.controller.tolerations }}{{ toYaml .Values.controller.tolerations | nindent 8 }}{{- end }}
+      tolerations: {{ with .Values.controller.tolerations }}{{ toYaml . | nindent 8 }}{{ else }}[]{{ end }}
       volumes:
         - name: socket-dir
           emptyDir:
