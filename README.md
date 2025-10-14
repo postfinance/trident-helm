@@ -1,4 +1,4 @@
-# trident-cli-helm
+# trident-helm
 
 This is a Helm chart deploys the controller and daemonset for trident CSI based on the manifests output by `tridentctl`.
 The templates are generated with the `transform.sh` script which runs `tridentctl`, fixes some formatting and adds the helm templating.
