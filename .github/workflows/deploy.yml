@@ -3,11 +3,11 @@ name: Helm Render and Install on KinD
 on:
   pull_request:
     paths:
-      - 'charts/trident-cli-helm/**'
+      - "charts/trident-cli-helm/**"
   push:
     paths:
-      - 'charts/trident-cli-helm/**'
-    branches: [ main ]
+      - "charts/trident-cli-helm/**"
+    branches: [main]
 
 jobs:
   helm-kind:
@@ -31,3 +31,4 @@ jobs:
 
       - name: Get all resources
         run: kubectl get all -A
+

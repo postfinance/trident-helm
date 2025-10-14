@@ -2,11 +2,11 @@ name: Helm Lint & Template
 on:
   pull_request:
     paths:
-      - 'charts/trident-cli-helm/**'
+      - "charts/trident-cli-helm/**"
   push:
     paths:
-      - 'charts/trident-cli-helm/**'
-    branches: [ main ]
+      - "charts/trident-cli-helm/**"
+    branches: [main]
 jobs:
   lint:
     runs-on: ubuntu-latest
