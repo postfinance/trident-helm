@@ -3,10 +3,10 @@ name: Helm Render and Install on KinD
 on:
   pull_request:
     paths:
-      - "charts/trident-cli-helm/**"
+      - "charts/trident-helm/**"
   push:
     paths:
-      - "charts/trident-cli-helm/**"
+      - "charts/trident-helm/**"
     branches: [main]
 
 jobs:
@@ -24,11 +24,10 @@ jobs:
         uses: azure/setup-helm@v4
 
       - name: Render Helm template
-        run: helm template trident charts/trident-cli-helm > rendered.yaml
+        run: helm template trident charts/trident-helm > rendered.yaml
 
       - name: Install Helm chart
         run: kubectl apply -f rendered.yaml
 
       - name: Get all resources
         run: kubectl get all -A
-
