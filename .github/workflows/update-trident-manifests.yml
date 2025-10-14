@@ -35,15 +35,6 @@ jobs:
           cluster_name: trident-test
           wait: 60s
 
-      - name: Install tools
-        run: |
-          # Install yq
-          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
-          sudo chmod +x /usr/local/bin/yq
-
-          # Install helm
-          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-
       - name: Determine Trident version
         id: version
         run: |
@@ -99,9 +90,6 @@ jobs:
           commit-message: |
             chore: update Trident manifests to v${{ steps.version.outputs.version }}
 
-            🤖 Generated with [Claude Code](https://claude.ai/code)
-
-            Co-Authored-By: Claude <noreply@anthropic.com>
           title: "chore: update Trident manifests to v${{ steps.version.outputs.version }}"
           body: |
             ## Summary

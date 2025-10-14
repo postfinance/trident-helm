@@ -32,8 +32,8 @@ yq -i '
   (.spec.template.spec.containers[] | select(.name == "driver-registrar")).resources = "{{ with .Values.daemonset.driverRegistrar.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}"
 ' setup/trident-daemonset.yaml
 
-# append tolerations to existing ones in daemonset
-yq -i '.spec.template.spec.tolerations += "{{- with .Values.daemonset.tolerations }}{{ toYaml . | nindent 8 }}{{- end }}"' setup/trident-daemonset.yaml
+# append tolerations to existing ones in daemonset using sed
+sed -i '/tolerations:/a\{{- with .Values.daemonset.tolerations }}{{ toYaml . | nindent 8 }}{{- end }}' setup/trident-daemonset.yaml
 
 # deployment
 yq -i '
@@ -49,7 +49,7 @@ yq -i '
   |
   (.spec.template.spec.containers[] | select(.name == "csi-snapshotter")).resources = "{{ with .Values.controller.csiSnapshotter.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}"
   |
-  .spec.template.spec.tolerations = "{{- if .Values.controller.tolerations }}{{ toYaml .Values.controller.tolerations | nindent 8 }}{{- end }}"
+  .spec.template.spec.tolerations = "{{ with .Values.controller.tolerations }}{{ toYaml . | nindent 8 }}{{ else }}[]{{ end }}"
   |
   .spec.template.metadata.annotations = "{{- if .Values.controller.annotations }}{{ toYaml .Values.controller.annotations | nindent 8 }}{{- end }}"
 ' setup/trident-deployment.yaml
@@ -71,7 +71,7 @@ echo "::endgroup::"
 
 echo "::group::Validating Helm chart"
 echo "Rendering Helm chart to verify template syntax..."
-helm template . 1&> /dev/null
+helm template .
 echo "✅ Helm chart validation successful"
 echo "::endgroup::"
 
