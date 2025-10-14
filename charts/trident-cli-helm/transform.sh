@@ -71,7 +71,7 @@ echo "::endgroup::"
 
 echo "::group::Validating Helm chart"
 echo "Rendering Helm chart to verify template syntax..."
-helm template . 1&> /dev/null
+helm template .
 echo "✅ Helm chart validation successful"
 echo "::endgroup::"
 
