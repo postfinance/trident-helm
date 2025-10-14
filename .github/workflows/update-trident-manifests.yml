@@ -9,6 +9,7 @@ on:
   pull_request:
     paths:
       - "TRIDENT_VERSION"
+      - "charts/trident-cli-helm/transform.sh"
     branches:
       - main
   workflow_dispatch:
@@ -83,7 +84,7 @@ jobs:
           fi
 
       - name: Create Pull Request
-        if: steps.changes.outputs.has_changes == 'true'
+        if: steps.changes.outputs.has_changes == 'true' && github.event_name != 'pull_request'
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -116,7 +117,12 @@ jobs:
       - name: Summary
         run: |
           if [ "${{ steps.changes.outputs.has_changes }}" == "true" ]; then
-            echo "✅ Created PR for Trident v${{ steps.version.outputs.version }} updates"
+            if [ "${{ github.event_name }}" == "pull_request" ]; then
+              echo "⚠️ Changes detected in PR - manifests need regeneration"
+              echo "::warning::The generated manifests differ from those in the transform script. Consider running the transform script locally."
+            else
+              echo "✅ Created PR for Trident v${{ steps.version.outputs.version }} updates"
+            fi
           else
             echo "ℹ️ No changes needed - manifests are up to date"
           fi
