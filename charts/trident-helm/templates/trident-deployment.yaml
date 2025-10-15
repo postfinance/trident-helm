@@ -22,7 +22,7 @@ spec:
       serviceAccount: trident-controller
       containers:
         - name: trident-main
-          image: netapp/trident:25.06.2
+          image: {{ with .Values.controller.tridentMain.image }}{{ toYaml . | nindent 12 }}{{ else }}netapp/trident:25.06.2{{ end }}
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsNonRoot: false
@@ -86,7 +86,7 @@ spec:
               readOnly: true
           resources: {{ with .Values.controller.tridentMain.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}
         - name: trident-autosupport
-          image: docker.io/netapp/trident-autosupport:25.06
+          image: {{ with .Values.controller.tridentAutosupport.image }}{{ toYaml . | nindent 12 }}{{ else }}docker.io/netapp/trident-autosupport:25.06{{ end }}
           imagePullPolicy: IfNotPresent
           securityContext:
             capabilities:
@@ -104,7 +104,7 @@ spec:
             - name: asup-dir
               mountPath: /asup
         - name: csi-provisioner
-          image: registry.k8s.io/sig-storage/csi-provisioner:v5.2.0
+          image: {{ with .Values.controller.csiProvisioner.image }}{{ toYaml . | nindent 12 }}{{ else }}registry.k8s.io/sig-storage/csi-provisioner:v5.2.0{{ end }}
           imagePullPolicy: IfNotPresent
           securityContext:
             capabilities:
@@ -125,7 +125,7 @@ spec:
               mountPath: /var/lib/csi/sockets/pluginproxy/
           resources: {{ with .Values.controller.csiProvisioner.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}
         - name: csi-attacher
-          image: registry.k8s.io/sig-storage/csi-attacher:v4.8.1
+          image: {{ with .Values.controller.csiAttacher.image }}{{ toYaml . | nindent 12 }}{{ else }}registry.k8s.io/sig-storage/csi-attacher:v4.8.1{{ end }}
           imagePullPolicy: IfNotPresent
           securityContext:
             capabilities:
@@ -145,7 +145,7 @@ spec:
               mountPath: /var/lib/csi/sockets/pluginproxy/
           resources: {{ with .Values.controller.csiAttacher.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}
         - name: csi-resizer
-          image: registry.k8s.io/sig-storage/csi-resizer:v1.13.2
+          image: {{ with .Values.controller.csiResizer.image }}{{ toYaml . | nindent 12 }}{{ else }}registry.k8s.io/sig-storage/csi-resizer:v1.13.2{{ end }}
           imagePullPolicy: IfNotPresent
           securityContext:
             capabilities:
@@ -164,7 +164,7 @@ spec:
               mountPath: /var/lib/csi/sockets/pluginproxy/
           resources: {{ with .Values.controller.csiResizer.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}
         - name: csi-snapshotter
-          image: registry.k8s.io/sig-storage/csi-snapshotter:v8.2.1
+          image: {{ with .Values.controller.csiSnapshotter.image }}{{ toYaml . | nindent 12 }}{{ else }}registry.k8s.io/sig-storage/csi-snapshotter:v8.2.1{{ end }}
           imagePullPolicy: IfNotPresent
           securityContext:
             capabilities:

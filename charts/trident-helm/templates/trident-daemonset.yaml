@@ -33,7 +33,7 @@ spec:
                 - all
               add:
                 - SYS_ADMIN
-          image: netapp/trident:25.06.2
+          image: {{ with .Values.daemonset.tridentMain.image }}{{ toYaml . | nindent 12 }}{{ else }}netapp/trident:25.06.2{{ end }}
           imagePullPolicy: IfNotPresent
           command:
             - /trident_orchestrator
@@ -117,7 +117,7 @@ spec:
               readOnly: true
           resources: {{ with .Values.daemonset.tridentMain.resources }}{{ toYaml . | nindent 12 }}{{ else }}{}{{ end }}
         - name: driver-registrar
-          image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.13.0
+          image: {{ with .Values.daemonset.driverRegistrar.image }}{{ toYaml . | nindent 12 }}{{ else }}registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.13.0{{ end }}
           imagePullPolicy: IfNotPresent
           args:
             - "--v=2"

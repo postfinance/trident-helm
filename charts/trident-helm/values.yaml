@@ -1,21 +1,29 @@
 daemonset:
   tridentMain:
+    image: ""
     resources: {}
   driverRegistrar:
+    image: ""
     resources: {}
   tolerations: []
 controller:
   annotations: {}
   tridentMain:
+    image: ""
     resources: {}
   tridentAutosupport:
+    image: ""
     resources: {}
   csiProvisioner:
+    image: ""
     resources: {}
   csiAttacher:
+    image: ""
     resources: {}
   csiResizer:
+    image: ""
     resources: {}
   csiSnapshotter:
+    image: ""
     resources: {}
   tolerations: []
